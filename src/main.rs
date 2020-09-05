@@ -56,19 +56,9 @@ fn main() {
         println!("{}", board);
 
         let next = match board.player() {
-            Player::First => {
-                let next = first_policy.play(&board);
-                second_policy.on_opponents_move(&next);
-                next
-            }
-            Player::Second => {
-                let next = second_policy.play(&board);
-                first_policy.on_opponents_move(&next);
-                next
-            }
+            Player::First => first_policy.play(&board),
+            Player::Second => second_policy.play(&board),
         };
-
-        assert!(board.next_states().any(|x| x == next));
 
         println!(
             "-> {}",
@@ -82,13 +72,20 @@ fn main() {
                 .unwrap()
         );
 
+        match board.player() {
+            Player::First => {
+                second_policy.on_opponents_move(&next);
+            }
+            Player::Second => {
+                first_policy.on_opponents_move(&next);
+            }
+        };
         board = next;
 
         println!()
     }
 
-    println!("{}", board);
-    println!("{:?} won", board.winner().unwrap());
+    println!("{}\n\n{:?} won", board, board.winner().unwrap());
 }
 
 fn create_policy(policy: PolicyOption, opt: &Opt) -> Box<dyn Policy> {
