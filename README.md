@@ -39,16 +39,23 @@ mckalah mcts human
 # Start with 4 stones in each pit
 mckalah -n 4
 
-# random vs MCTS with a timeout of 100ms
-mckalah random mcts -t 100
+# random vs MCTS with a timeout of 0.1s
+mckalah random mcts -t 0.1
 ```
 
 ## Options
 
 ```
+USAGE:
+    mckalah [OPTIONS] [ARGS]
+
+FLAGS:
+    -h, --help       Prints help information
+    -V, --version    Prints version information
+
 OPTIONS:
     -n <n>                     n stones in each pit [default: 3]
-    -t, --timeout <timeout>    Timeout for Monte Carlo tree search in ms [default: 1000]
+    -t, --timeout <timeout>    Timeout for Monte Carlo tree search in seconds [default: 1]
 
 ARGS:
     <first>     One of human, random, or mcts [default: human]

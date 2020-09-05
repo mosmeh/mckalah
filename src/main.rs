@@ -39,9 +39,9 @@ struct Opt {
     #[structopt(short, default_value = "3")]
     n: u8,
 
-    /// Timeout for Monte Carlo tree search in ms
-    #[structopt(short, long, default_value = "1000")]
-    timeout: u64,
+    /// Timeout for Monte Carlo tree search in seconds
+    #[structopt(short, long, default_value = "1")]
+    timeout: f32,
 }
 
 fn main() {
@@ -101,6 +101,6 @@ fn create_policy(policy: PolicyOption, opt: &Opt) -> Box<dyn Policy> {
     match policy {
         Human => Box::new(HumanPolicy::default()),
         Random => Box::new(RandomPolicy::default()),
-        Mcts => Box::new(MctsPolicy::new(opt.n, Duration::from_millis(opt.timeout))),
+        Mcts => Box::new(MctsPolicy::new(opt.n, Duration::from_secs_f32(opt.timeout))),
     }
 }
