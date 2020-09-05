@@ -85,9 +85,9 @@ impl Policy for MctsPolicy {
 }
 
 impl MctsPolicy {
-    pub fn new(timeout: Duration) -> Self {
+    pub fn new(n: u8, timeout: Duration) -> Self {
         let root = Node {
-            board: Default::default(),
+            board: Board::new(n),
             visits: 0,
             wins: 0,
             parent: Weak::new(),

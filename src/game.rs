@@ -1,9 +1,8 @@
 use std::fmt;
 use std::str::FromStr;
 
-// Kalah(m, n) notation: m pits per side and n stones in each pit
+// Kalah(m, n) notation: m pits per side
 const KALAH_M: usize = 6;
-const KALAH_N: u8 = 3;
 
 const NUM_HOLES: usize = (KALAH_M + 1) * 2;
 const PLAYER_STORE: usize = KALAH_M;
@@ -50,23 +49,15 @@ impl FromStr for Move {
 // opponent's store: holes[13]  player's store: holes[6]
 // player's house:   holes[0]     holes[1]  ... holes[5]
 
+// Initial state:
+// 3  3  3  3  3  3
+// 0              0
+// 3  3  3  3  3  3
+
 #[derive(Debug, Clone, PartialEq)]
 pub struct Board {
     holes: [u8; NUM_HOLES],
     player: Player,
-}
-
-impl Default for Board {
-    fn default() -> Self {
-        let mut holes = [KALAH_N; NUM_HOLES];
-        holes[PLAYER_STORE] = 0;
-        holes[OPPONENT_STORE] = 0;
-
-        Self {
-            holes,
-            player: Player::First,
-        }
-    }
 }
 
 impl fmt::Display for Board {
@@ -92,6 +83,17 @@ impl fmt::Display for Board {
 }
 
 impl Board {
+    pub fn new(n: u8) -> Self {
+        let mut holes = [n; NUM_HOLES];
+        holes[PLAYER_STORE] = 0;
+        holes[OPPONENT_STORE] = 0;
+
+        Self {
+            holes,
+            player: Player::First,
+        }
+    }
+
     pub fn player(&self) -> Player {
         self.player
     }
@@ -147,7 +149,7 @@ impl Board {
             self.player = self.player.other();
         }
 
-        debug_assert_eq!(self.holes.iter().sum::<u8>(), 2 * KALAH_M as u8 * KALAH_N);
+        debug_assert_eq!(self.holes.iter().sum::<u8>() % 2, 0);
     }
 
     pub fn is_game_over(&self) -> bool {

@@ -35,6 +35,10 @@ struct Opt {
     #[structopt(default_value = "mcts")]
     second: PolicyOption,
 
+    /// n stones in each pit
+    #[structopt(short, default_value = "3")]
+    n: u8,
+
     /// Timeout for Monte Carlo tree search in ms
     #[structopt(short, long, default_value = "1000")]
     timeout: u64,
@@ -43,7 +47,7 @@ struct Opt {
 fn main() {
     let opt = Opt::from_args();
 
-    let mut board = Board::default();
+    let mut board = Board::new(opt.n);
 
     let mut first_policy = create_policy(opt.first, &opt);
     let mut second_policy = create_policy(opt.second, &opt);
@@ -93,6 +97,6 @@ fn create_policy(policy: PolicyOption, opt: &Opt) -> Box<dyn Policy> {
     match policy {
         Human => Box::new(HumanPolicy::default()),
         Random => Box::new(RandomPolicy::default()),
-        Mcts => Box::new(MctsPolicy::new(Duration::from_millis(opt.timeout))),
+        Mcts => Box::new(MctsPolicy::new(opt.n, Duration::from_millis(opt.timeout))),
     }
 }
