@@ -1,0 +1,9 @@
+[package]
+name = "mckalah"
+version = "0.1.0"
+authors = ["mosm <airman515@gmail.com>"]
+edition = "2018"
+
+[dependencies]
+rand = { version = "0.7.3", features = ["small_rng"] }
+structopt = "0.3.17"
