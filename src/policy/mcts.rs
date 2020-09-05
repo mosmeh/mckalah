@@ -42,8 +42,12 @@ impl Policy for MctsPolicy {
 
             let winner = node.borrow_mut().playout(&mut self.rng);
             node.borrow_mut().visits += 1;
-            if winner != node.borrow().board.player() {
-                node.borrow_mut().wins += 1;
+            if let Some(winner) = winner {
+                if winner == node.borrow().parent_player {
+                    node.borrow_mut().wins += 1;
+                } else {
+                    node.borrow_mut().loses += 1;
+                }
             }
 
             if node.borrow().visits >= EXPANSION_THRESHOLD {
@@ -52,8 +56,12 @@ impl Policy for MctsPolicy {
 
             while let Some(parent) = node.clone().borrow().parent.upgrade() {
                 parent.borrow_mut().visits += 1;
-                if winner != parent.borrow().board.player() {
-                    parent.borrow_mut().wins += 1;
+                if let Some(winner) = winner {
+                    if winner == parent.borrow().parent_player {
+                        parent.borrow_mut().wins += 1;
+                    } else {
+                        parent.borrow_mut().loses += 1;
+                    }
                 }
                 node = parent;
             }
@@ -88,10 +96,12 @@ impl MctsPolicy {
     pub fn new(n: u8, timeout: Duration) -> Self {
         let root = Node {
             board: Board::new(n),
-            visits: 0,
-            wins: 0,
             parent: Weak::new(),
             children: Vec::new(),
+            visits: 0,
+            wins: 0,
+            loses: 0,
+            parent_player: Player::Second,
         };
         Self {
             timeout,
@@ -128,10 +138,12 @@ impl MctsPolicy {
 #[derive(Debug)]
 struct Node {
     board: Board,
-    visits: usize,
-    wins: usize,
     parent: Weak<RefCell<Node>>,
     children: Vec<Rc<RefCell<Node>>>,
+    visits: usize,
+    wins: usize,
+    loses: usize,
+    parent_player: Player,
 }
 
 impl Node {
@@ -140,10 +152,12 @@ impl Node {
     }
 
     fn win_rate(&self) -> f32 {
+        debug_assert!(self.wins + self.loses <= self.visits);
+
         if self.visits == 0 {
             0.5
         } else {
-            self.wins as f32 / self.visits as f32
+            0.5 + (self.wins as f32 - self.loses as f32) / (self.visits * 2) as f32
         }
     }
 
@@ -155,20 +169,21 @@ impl Node {
         }
     }
 
-    fn playout<R: Rng>(&mut self, mut rng: R) -> Player {
+    fn playout<R: Rng>(&mut self, mut rng: R) -> Option<Player> {
         let mut board = self.board.clone();
         while !board.is_game_over() {
             let next_move = board.possible_moves().choose(&mut rng).unwrap();
             board.apply_move(next_move);
         }
 
-        board.winner().unwrap()
+        board.winner()
     }
 }
 
 fn expand_node(node: &Rc<RefCell<Node>>) {
     debug_assert!(node.borrow().children.is_empty());
 
+    let parent_player = node.borrow().board.player();
     let children = node
         .borrow()
         .board
@@ -176,10 +191,12 @@ fn expand_node(node: &Rc<RefCell<Node>>) {
         .map(|board| {
             let child = Node {
                 board,
-                visits: 0,
-                wins: 0,
                 parent: Rc::downgrade(node),
                 children: Vec::new(),
+                visits: 0,
+                wins: 0,
+                loses: 0,
+                parent_player,
             };
             Rc::new(RefCell::new(child))
         })

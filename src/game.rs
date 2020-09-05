@@ -164,14 +164,14 @@ impl Board {
     }
 
     pub fn winner(&self) -> Option<Player> {
-        if !self.is_game_over() {
-            return None;
-        }
+        use std::cmp::Ordering::*;
 
-        if self.holes[PLAYER_STORE] >= self.holes[OPPONENT_STORE] {
-            Some(self.player)
-        } else {
-            Some(self.player.other())
+        debug_assert!(self.is_game_over());
+
+        match self.holes[PLAYER_STORE].cmp(&self.holes[OPPONENT_STORE]) {
+            Less => Some(self.player().other()),
+            Greater => Some(self.player()),
+            Equal => None,
         }
     }
 

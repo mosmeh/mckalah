@@ -85,7 +85,14 @@ fn main() {
         println!()
     }
 
-    println!("{}\n\n{:?} won", board, board.winner().unwrap());
+    println!(
+        "{}\n\n{}",
+        board,
+        board
+            .winner()
+            .map(|p| format!("{:?} won", p))
+            .unwrap_or_else(|| "Draw".to_string())
+    );
 }
 
 fn create_policy(policy: PolicyOption, opt: &Opt) -> Box<dyn Policy> {
