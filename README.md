@@ -1,5 +1,7 @@
 # mckalah
 
+[![build](https://github.com/mosmeh/mckalah/workflows/build/badge.svg)](https://github.com/mosmeh/mckalah/actions)
+
 Monte Carlo tree search player for [Kalah](https://en.wikipedia.org/wiki/Kalah)
 
 ## Installation
