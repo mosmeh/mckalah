@@ -47,7 +47,7 @@ mckalah random mcts -t 0.1
 
 ```
 USAGE:
-    mckalah [OPTIONS] [ARGS]
+    mckalah [OPTIONS] [policy]...
 
 FLAGS:
     -h, --help       Prints help information
@@ -58,6 +58,5 @@ OPTIONS:
     -t, --timeout <timeout>    Timeout for Monte Carlo tree search in seconds [default: 1]
 
 ARGS:
-    <first>     One of human, random, or mcts [default: human]
-    <second>     [default: mcts]
+    <policy> <policy>     [default: human,mcts]  [possible values: human, random, mcts]
 ```

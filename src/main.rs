@@ -1,39 +1,28 @@
 use mckalah::game::{Board, Player};
 use mckalah::policy::{HumanPolicy, MctsPolicy, Policy, RandomPolicy};
-use std::str::FromStr;
 use std::time::Duration;
+use structopt::clap::arg_enum;
 use structopt::StructOpt;
 
+arg_enum! {
 #[derive(Copy, Clone)]
 enum PolicyOption {
     Human,
     Random,
     Mcts,
 }
-
-impl FromStr for PolicyOption {
-    type Err = String;
-
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        use PolicyOption::*;
-
-        match &s.to_ascii_lowercase()[..] {
-            "human" => Ok(Human),
-            "random" => Ok(Random),
-            "mcts" => Ok(Mcts),
-            _ => Err(format!("Unknown policy {}", s)),
-        }
-    }
 }
 
 #[derive(StructOpt)]
 struct Opt {
-    /// One of human, random, or mcts
-    #[structopt(default_value = "human")]
-    first: PolicyOption,
-
-    #[structopt(default_value = "mcts")]
-    second: PolicyOption,
+    #[structopt(
+        number_of_values = 2,
+        case_insensitive = true,
+        use_delimiter = true,
+        possible_values = &["human", "random", "mcts"],
+        default_value = "human,mcts"
+    )]
+    policy: Vec<PolicyOption>,
 
     /// n stones in each pit
     #[structopt(short, default_value = "3")]
@@ -49,8 +38,8 @@ fn main() {
 
     let mut board = Board::new(opt.n);
 
-    let mut first_policy = create_policy(opt.first, &opt);
-    let mut second_policy = create_policy(opt.second, &opt);
+    let mut first_policy = create_policy(opt.policy[0], &opt);
+    let mut second_policy = create_policy(opt.policy[1], &opt);
 
     while !board.is_game_over() {
         println!("{}", board);
