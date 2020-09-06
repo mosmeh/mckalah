@@ -43,7 +43,7 @@ impl Policy for MctsPolicy {
             let winner = node.borrow_mut().playout(&mut self.rng);
             node.borrow_mut().visits += 1;
             if let Some(winner) = winner {
-                if winner == node.borrow().parent_player {
+                if winner == node.borrow().made_by {
                     node.borrow_mut().wins += 1;
                 } else {
                     node.borrow_mut().loses += 1;
@@ -57,7 +57,7 @@ impl Policy for MctsPolicy {
             while let Some(parent) = node.clone().borrow().parent.upgrade() {
                 parent.borrow_mut().visits += 1;
                 if let Some(winner) = winner {
-                    if winner == parent.borrow().parent_player {
+                    if winner == parent.borrow().made_by {
                         parent.borrow_mut().wins += 1;
                     } else {
                         parent.borrow_mut().loses += 1;
@@ -80,7 +80,7 @@ impl Policy for MctsPolicy {
             })
             .unwrap()
             .clone();
-        eprintln!("#visits: {}", self.root.borrow().visits);
+        eprintln!("#games: {}", self.root.borrow().visits);
         eprintln!("Expected win rate: {}", next.borrow().win_rate());
 
         self.root = next;
@@ -101,7 +101,7 @@ impl MctsPolicy {
             visits: 0,
             wins: 0,
             loses: 0,
-            parent_player: Player::Second,
+            made_by: Player::Second,
         };
         Self {
             timeout,
@@ -143,7 +143,7 @@ struct Node {
     visits: usize,
     wins: usize,
     loses: usize,
-    parent_player: Player,
+    made_by: Player,
 }
 
 impl Node {
@@ -161,11 +161,11 @@ impl Node {
         }
     }
 
-    fn ucb(&self, n_ln: f32) -> f32 {
+    fn ucb(&self, ln_n: f32) -> f32 {
         if self.visits == 0 {
             std::f32::INFINITY
         } else {
-            self.win_rate() + EXPLORATION_CONST * (n_ln / self.visits as f32).sqrt()
+            self.win_rate() + EXPLORATION_CONST * (ln_n / self.visits as f32).sqrt()
         }
     }
 
@@ -183,7 +183,7 @@ impl Node {
 fn expand_node(node: &Rc<RefCell<Node>>) {
     debug_assert!(node.borrow().children.is_empty());
 
-    let parent_player = node.borrow().board.player();
+    let made_by = node.borrow().board.player();
     let children = node
         .borrow()
         .board
@@ -196,7 +196,7 @@ fn expand_node(node: &Rc<RefCell<Node>>) {
                 visits: 0,
                 wins: 0,
                 loses: 0,
-                parent_player,
+                made_by,
             };
             Rc::new(RefCell::new(child))
         })
